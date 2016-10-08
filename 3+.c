@@ -3,31 +3,34 @@
 #include <stdint.h>
 #include <sys/mman.h>
 #include <string.h>
-int gen_push_rbp(char* const ptr)
+#include "3+.h"
+size_t gen_push_rbp(char* const ptr)
 {
-char str[]="\x55";
-memcpy(ptr,str,1);
+*ptr=0x55;
 return 1;
 }
-int mov_rbp_rsp(char* const ptr)
+size_t gen_mov_rbp_rsp(char* const ptr)
 {
-char str[]="\x48\x89\xe5";
-memcpy(ptr,str,3);
+*ptr=0x48;
+*(ptr+1)=0x89;
+*(ptr+2)=0xe5;
 return 3;
 }
-int xor_rax_rax(char* const ptr)
+size_t gen_xor_rax_rax(char* const ptr)
 {
-char str[]="\x48\x31\xc0";
-memcpy(ptr,str,3);
+*ptr=0x48;
+*(ptr+1)=0x31;
+*(ptr+2)=0xc0;
 return 3;
 }
-int add_rax_rdi(char* const ptr)
+size_t gen_add_rax_rdi(char* const ptr)
 {
-char str[]="\x48\x03\x07";
-memcpy(ptr,str,3);
+*ptr=0x48;
+*(ptr+1)=0x03;
+*(ptr+2)=0x07;
 return 3;
 }
-int add_rax_rdi_offset(char* const ptr,const int a)
+size_t gen_add_rax_rdi_offset(char* const ptr,const int a)
 {
 int i=a;
 int b=0;
@@ -58,47 +61,20 @@ str[i]=0;
 memcpy(ptr,str,7);
 return 7;
 }
-int mov_rsp_rbp(char* const ptr)
+size_t gen_mov_rsp_rbp(char* const ptr)
 {
-char str[]="\x48\x89\xec";
-memcpy(ptr,str,3);
+*ptr=0x48;
+*(ptr+1)=0x89;
+*(ptr+2)=0xec;
 return 3;
 }
-int pop_rbp(char* const ptr)
+size_t gen_pop_rbp(char* const ptr)
 {
-char str[]="\x5d";
-memcpy(ptr,str,1);
+*ptr=0x5d;
 return 1;
 }
-int ret(char* const ptr)
+size_t gen_ret(char* const ptr)
 {
-char str[]="\xc3";
-memcpy(ptr,str,1);
+*ptr=0xc3;
 return 1;
-}
-void convert_to_assembler(int* const array,const size_t n)
-{
-char* ptr;	
-int (*sum)(int*);
-int i=0;	
-ptr=(char*)mmap(NULL, 10, PROT_WRITE|PROT_EXEC, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
-sum=(int(*)(int*))(void*)ptr;
-ptr+=gen_push_rbp(ptr);
-ptr+=mov_rbp_rsp(ptr);
-ptr+=xor_rax_rax(ptr);
-ptr+=add_rax_rdi(ptr);
-for(i=1;i<n;i++)
-{
-ptr+=add_rax_rdi_offset(ptr,4*i);
-}
-ptr+=mov_rsp_rbp(ptr);
-ptr+=pop_rbp(ptr);
-ptr+=ret(ptr);
-printf("sum is %i\n",sum(array));
-}
-int main(int argc, char** argv)
-{
-int array[]={1,4,7,2,6};
-convert_to_assembler(array,5);	
-return 0;
 }
